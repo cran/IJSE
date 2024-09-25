@@ -1,0 +1,5 @@
+exportPattern("^[[:alpha:]]+")
+importFrom("brms", "log_lik")
+importFrom("posterior", "variables")
+importFrom("posterior", "as_draws_matrix")
+importFrom("stats", "cov")
