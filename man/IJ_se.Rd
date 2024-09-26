@@ -10,14 +10,14 @@ IJ_se(fit, cluster_var = NULL)
 \item{fit}{A `brmsfit` object resulting from fitting a model using the `brms` package.}
 
 \item{cluster_var}{An optional vector indicating the cluster membership for each observation.
-If `NULL`, the function treats the data as non-clustered.}
+If `NULL`, the function treats the data as independent.}
 }
 \value{
 A named vector of standard errors for the fixed effects parameters.
 }
 \description{
 Computes infinite-jackknife-based standard errors for fixed effects parameters
-from a `brmsfit` model object. The function handles both clustered and non-clustered data.
+from a `brmsfit` model object. The function handles both clustered and independent data.
 }
 \examples{
 \donttest{
@@ -29,7 +29,7 @@ library(brms)
 
 set.seed(42)
 
-### Model 1: Linear Regression
+### Model 1: Linear Regression using brms
 
 # Simulate data
 
@@ -45,6 +45,7 @@ beta_age <- -1000  # Age effect
 beta_income <- 0.5 # Income effect
 beta_edu <- 2000   # Education effect
 sigma <- 10000     # Residual standard deviation
+
 # Simulate house prices
 
 house_price <- beta_0 + beta_age * age + beta_income * income +
@@ -67,11 +68,11 @@ fit_linear <- brm(
 
 summary(fit_linear)
 
-# Obtain IJ-based SE (assuming a custom function IJ_se exists for this purpose)
+# Obtain IJ-based SE
 
 IJ_se(fit_linear)
 
-### Model 2: Hierarchical Linear Model (Multilevel Model)
+### Model 2: Linear Regression for Clustered Data using brms
 
 # Simulate data
 
@@ -113,7 +114,7 @@ reading_score <- beta_0 + beta_age * student_age + beta_math * math_score +
 
 # Create data frame
 
-data_hierarchical <- data.frame(
+data_clustered <- data.frame(
   reading_score,
   student_age,
   math_score,
@@ -124,19 +125,79 @@ data_hierarchical <- data.frame(
 
 # Fit the model
 
-fit_hierarchical <- brm(
-  formula = reading_score ~ student_age + math_score + school_type + (1 | school_id),
-  data = data_hierarchical,
+fit_clustered <- brm(
+  formula = reading_score ~ student_age + math_score + school_type,
+  data = data_clustered,
   family = gaussian(),
   seed = 42
 )
 
 # Summary
 
-summary(fit_hierarchical)
+summary(fit_clustered)
 
-# Obtain IJ-based SE (assuming a custom function IJ_se exists for this purpose)
-IJ_se(fit_hierarchical)
+# Obtain IJ-based SE, taking the clustering into account
+IJ_se(fit_clustered, cluster_var = data_clustered$school_id)
+
+### Example 3: Quantile Regression using brms
+
+# Independent data for quantile regression
+N <- 100
+x <- runif(N)
+eps <- 1 * x^2 + sin(rchisq(N, 8)) + sin(rnorm(x, 3))  # some random DGP
+y <- 2 * x + runif(N) + eps^2
+
+# Create data frame
+data_quantile <- data.frame(y, x)
+
+# Fit quantile regression model
+fit_quantile <- brm(
+  formula = bf(y ~ x, quantile = .3),  # Quantile regression with 30th percentile
+  data = data_quantile,
+  family = asym_laplace(link_quantile = "identity"),
+  seed = 42
+)
+
+# Summary of quantile regression model
+summary(fit_quantile)
+
+# Obtain IJ-based SE
+IJ_se(fit_quantile)
+
+### Example 4: Quantile Regression for Clustered Data using brms
+
+# Clustered data for quantile regression
+J <- 30  # Number of clusters
+I <- 50  # Cluster size
+subj <- rep(1:J, each = I)
+rho <- 0.8
+
+# Random effect and error terms
+U <- rnorm(J * I, sd = sqrt(1 / 3))
+Z <- rep(rnorm(J, sd = 5), each = I)
+E <- rnorm(J * I)
+
+# Covariates and response variable
+X <- sqrt(rho) * Z + sqrt(1 - rho) * E
+X2 <- X^2
+Y <- 0.1 * U + X + X2 * U
+
+# Create data frame
+data_cluster_quantile <- data.frame(Y, X, X2, subj = factor(subj))
+
+# Fit quantile regression model
+fit_quantile_cluster <- brm(
+  formula = bf(Y ~ X + X2, quantile = .33),  # Quantile regression with 33rd percentile
+  data = data_cluster_quantile,
+  family = asym_laplace(link_quantile = "identity"),
+  seed = 42
+)
+
+# Summary of quantile regression model
+summary(fit_quantile_cluster)
+
+# Obtain IJ-based SE, taking clustering into account
+IJ_se(fit_quantile_cluster, cluster_var = data_cluster_quantile$subj)
 }
 
 
