@@ -1,7 +1,7 @@
 Type: Package
 Package: IJSE
-Title: Infinite-Jackknife-Based Standard Errors for 'brms' Models
-Version: 0.1.1
+Title: Infinitesimal Jackknife Standard Errors for 'brms' Models
+Version: 0.1.2
 Authors@R: c(
     person(given = "Feng", family = "Ji", email = "f.ji@utoronto.ca", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2051-5453")),
@@ -20,10 +20,10 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2024-09-26 15:19:07 UTC; jifeng3
-Author: Feng Ji [aut, cre] (<https://orcid.org/0000-0002-2051-5453>),
+Packaged: 2025-07-09 18:11:17 UTC; jifeng3
+Author: Feng Ji [aut, cre] (ORCID: <https://orcid.org/0000-0002-2051-5453>),
   JoonHo Lee [aut],
   Sophia Rabe-Hesketh [aut]
 Maintainer: Feng Ji <f.ji@utoronto.ca>
 Repository: CRAN
-Date/Publication: 2024-09-26 21:00:53 UTC
+Date/Publication: 2025-07-18 15:20:34 UTC
